@@ -5,31 +5,54 @@ Last updated: 2026-10-06
 This file is the handover for the next working session. It says what exists, what the finished
 site looks like, the order to build it in, and what is still waiting on the clinic.
 
-**Status: the structure in sections 2 to 4 is agreed. Building has not started. Get the owner's
-go-ahead before starting section 7.**
+**Status: steps 1 and 2 of section 7 are done. Get the owner's go-ahead before starting step 3.**
 
 ## 1. Where things stand
 
-The site is one page so far (`/`). It has:
+The site has 13 pages:
 
-- A hero with the clinic tagline.
-- Three 3D scroll chapters: **Dental Implant**, **Crown**, **Root Canal Treatment**.
-- A plain text list of all 10 services, each with a pre-filled WhatsApp link.
-- A contact footer.
+- **Home** (`/`): hero, three 3D scroll chapters (**Dental Implant**, **Crown**, **Root Canal
+  Treatment**), the ten treatment cards, contact footer.
+- **Treatments** (`/services`): the ten cards.
+- **Ten service pages** (`/services/<slug>`). Implant, Crown and Root Canal open with their 3D
+  chapter. The other seven open with a plain dark header until their chapter is built.
+- **Contact** (`/contact`): address, phone, WhatsApp, a directions link.
+- A styled **404** page.
 
-Nothing is deployed. There is no git repository yet. Nothing has been pushed anywhere.
+Every page has the new header (Treatments, Contact, WhatsApp, and a menu on phones) and the
+footer. `/about` is not built; it waits for clinic content.
+
+There is a local git repository. Nothing is deployed and nothing has been pushed anywhere.
 
 ### What has been checked
 
-- `npx tsc --noEmit` passes (re-run 2026-10-06). `npm run build` passed in an earlier session.
-- Screenshots in headless Chrome at 1440×900 and 390×844 for all three chapters and the
-  transitions between them. No console errors.
+All on 2026-10-06, after step 2:
+
+- `npx tsc --noEmit` and `npm run build` pass.
+- `npm run shots`: screenshots in headless Chrome at 1440×900 and 390×844, covering the home
+  chapters, two service pages with a chapter, one without, Treatments, Contact, 404 and the
+  phone menu. No console errors and no failed requests.
+- Clicked through in headless Chrome: header links, a treatment card, an "other treatments"
+  link, the logo, the home `#services` button, and the phone menu (open, Escape, follow a
+  link). Moving between pages happens without a full reload, and a 3D chapter still runs on a
+  page reached that way.
 
 ### What has not been checked
 
 - Frame rate on a real phone.
 - Dragging the model to turn it (mouse and touch).
 - Any browser other than Chrome.
+- The header and menu on a real phone.
+
+### Things added in step 2 that the owner did not see in advance
+
+- The last card in the treatments grid: "Not sure which treatment you need? Tell us what is
+  troubling you and we will guide you." This wording is new, not from the catalogue. It fills
+  the gap that ten cards leave in a three-column grid.
+- The "Get directions" link on the contact page opens a Google Maps search for the address in
+  `clinic.ts`. It is only as right as that address, which is still unconfirmed.
+- Page addresses end in a slash (`/services/crown/`), set by `trailingSlash` in
+  `next.config.ts`, so the site works on any static host.
 
 ## 2. Decisions already made
 
@@ -125,9 +148,15 @@ filled in. It sends nothing to a server.
 
 ```
 npm run dev      # dev server (port 3000, or 3001 if 3000 is taken)
-npm run build    # static export into out/
+npm run build    # static export into out/, then scripts/fix-export.mjs
 npm run preview  # serve out/
+npm run shots    # screenshots of out/ into shots/ (see section 12)
 ```
+
+`scripts/fix-export.mjs` works around a Next.js fault that only shows when building on Windows:
+the small files that let links load the next page without a full reload are written under the
+wrong names, and every one of them returns a 404. The script renames them. On Linux or macOS it
+does nothing. Do not remove it from the build while builds are made on this machine.
 
 Stack: Next.js 16 (static export), React 19, three.js, React Three Fiber, drei, GSAP
 ScrollTrigger, Lenis, Tailwind 4.
@@ -165,32 +194,35 @@ Shared helpers worth knowing:
 Service descriptions in `src/content/services.ts` are the clinic's own WhatsApp catalogue text.
 Do not add clinical claims that are not in the catalogue or confirmed by the clinic.
 
-### Changes needed so chapters work on more than one page
+### How a chapter gets onto a page
 
-- `Stage.tsx` and `Experience.tsx` always mount every chapter. Both need to take a list of
-  chapter ids, so the home page asks for three and a service page asks for one. The scene code
-  must load only for the chapters a page uses.
-- The hero is written inside `Stage.tsx`. Move it out so a service page can use the stage
-  without the home hero.
-- Chapter ids (`implant`, `root-canal`) do not match service slugs (`dental-implant`,
-  `root-canal-treatment`). Make the chapter id the service slug, so a page can find its chapter.
-- On a service page the chapter is the first thing on the page, so it uses `pinFromTop`.
+- **A chapter's id is its service's slug.** A service page shows a 3D chapter when
+  `chapters.ts` has a chapter with that slug, and the plain header when it does not. So adding
+  a chapter to `chapters.ts` and `SCENES` is all it takes to put it on its service page.
+- `<Stage ids={[...]}>` puts chapters on a page. The home page passes `homeChapterIds` (in
+  `chapters.ts`) and the hero as its child. A service page passes its own slug and
+  `standalone`, which makes the chapter's first step the page's main heading under the service
+  name, and drops the "More about this treatment" link.
+- Each scene in `SCENES` is loaded on demand, so a page only downloads the scenes it shows.
+- `Shell.tsx` wraps every page: smooth scrolling, header, footer. `PageHeader.tsx` is the dark
+  opening for pages with no chapter.
 
 ## 7. Build order
 
-Each step ends with `npx tsc --noEmit`, `npm run build` and screenshots at 1440×900 and 390×844.
+Each step ends with `npx tsc --noEmit`, `npm run build` and `npm run shots`.
 
-**Step 1: safety net**
+**Step 1: safety net** (done)
 
-- `git init` and a first commit of what exists.
-- Recreate the screenshot script (section 12) as `scripts/shots.mjs` and commit it.
+- `git init` and a first commit of what existed.
+- The screenshot script, `scripts/shots.mjs`.
 
-**Step 2: structure (no new 3D)**
+**Step 2: structure, no new 3D** (done)
 
-- The stage changes in section 6.
+- Chapters can be put on any page (section 6).
 - `/services`, the ten `/services/<slug>` pages (three with their chapter, seven with the plain
   header), `/contact`, and a styled 404.
 - New header with a phone menu. Home cards and chapter endings link to service pages.
+- Not done: the optional WhatsApp form on the contact page.
 
 **Step 3: make the 3D safe for every visitor**
 
@@ -294,7 +326,19 @@ The screenshots are the trusted source for service text. The PDF's clinical clai
 
 ## 12. Checking work visually
 
-Earlier sessions checked each chapter by driving the installed Chrome with `puppeteer-core`
-(headless, with `--enable-unsafe-swiftshader --ignore-gpu-blocklist --use-angle=swiftshader`),
-scrolling to set points in a chapter and saving a screenshot at desktop and phone sizes.
-That script lived in a temporary folder and is gone. Step 1 recreates it inside the project.
+```
+npm run build
+npm run shots              # every shot
+npm run shots -- crown     # only shots whose name contains "crown"
+```
+
+`scripts/shots.mjs` serves `out/`, drives the installed Chrome with `puppeteer-core` (headless,
+software rendering), scrolls to set points and saves a screenshot of each at 1440×900 and
+390×844 into `shots/` (not committed). It exits with an error if the browser console reports
+anything or any request fails.
+
+The list of shots is `PAGES` at the top of the script. Add a line there for each new chapter:
+`{ name, chapter: "<slug>", p: <0 to 1> }` scrolls to that point in the chapter.
+
+Whole-page shots (`full: true`) show the header a second time near the bottom. That is the
+capture stitching a fixed header, not a fault in the page.

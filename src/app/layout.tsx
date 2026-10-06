@@ -7,7 +7,10 @@ const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", dis
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap" });
 
 export const metadata: Metadata = {
-  title: `${clinic.name} ${clinic.city} — ${clinic.tagline}`,
+  title: {
+    default: `${clinic.name} ${clinic.city} — ${clinic.tagline}`,
+    template: `%s — ${clinic.name} ${clinic.city}`,
+  },
   description:
     "Dental implants, crowns, veneers, root canal treatment, braces, dentures and more in Peshawar. Explore each treatment in 3D and book on WhatsApp.",
 };

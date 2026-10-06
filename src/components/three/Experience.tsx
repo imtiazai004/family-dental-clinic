@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type ComponentType } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 import { advance, Canvas, createPortal, useFrame } from "@react-three/fiber";
@@ -8,18 +8,16 @@ import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei"
 import { chapterView, stage } from "@/lib/stage";
 import { boneTexture } from "./geometry";
 import { FOV } from "./rig";
-import CrownScene from "./scenes/CrownScene";
-import ImplantScene from "./scenes/ImplantScene";
-import RootCanalScene from "./scenes/RootCanalScene";
 
 type SceneProps = { id: string; pores: THREE.Texture };
 
 // One entry per chapter in content/chapters.ts, matched by id.
-const SCENES: { id: string; Scene: ComponentType<SceneProps> }[] = [
-  { id: "implant", Scene: ImplantScene },
-  { id: "crown", Scene: CrownScene },
-  { id: "root-canal", Scene: RootCanalScene },
-];
+// Each scene is its own download, so a page only fetches the scenes it shows.
+const SCENES: Record<string, ComponentType<SceneProps>> = {
+  "dental-implant": lazy(() => import("./scenes/ImplantScene")),
+  crown: lazy(() => import("./scenes/CrownScene")),
+  "root-canal-treatment": lazy(() => import("./scenes/RootCanalScene")),
+};
 
 type View = { id: string; Scene: ComponentType<SceneProps>; scene: THREE.Scene; camera: THREE.PerspectiveCamera };
 
@@ -104,7 +102,11 @@ function ChapterPortal({ view, pores }: { view: View; pores: THREE.Texture }) {
       <ambientLight intensity={0.35} />
       <directionalLight position={[4, 6, 6]} intensity={1.5} />
       <directionalLight position={[-5, 2, -3]} intensity={0.8} color="#d9b8ff" />
-      {near && <view.Scene id={view.id} pores={pores} />}
+      {near && (
+        <Suspense fallback={null}>
+          <view.Scene id={view.id} pores={pores} />
+        </Suspense>
+      )}
     </>,
     view.scene,
     { camera: view.camera },
@@ -134,15 +136,25 @@ function DrawChapters({ views }: { views: View[] }) {
   return null;
 }
 
-export default function Experience() {
+// `ids` are the chapters on this page, in page order.
+export default function Experience({ ids }: { ids: string[] }) {
   const [supported] = useState(hasWebGL);
   const [dpr, setDpr] = useState(() => Math.min(window.devicePixelRatio || 1, MAX_DPR));
   useDragYaw();
 
+  const key = ids.join("|");
   const views = useMemo<View[]>(
     () =>
-      SCENES.map((s) => ({ ...s, scene: new THREE.Scene(), camera: new THREE.PerspectiveCamera(FOV, 1, 1, 80) })),
-    [],
+      key
+        .split("|")
+        .filter((id) => id in SCENES)
+        .map((id) => ({
+          id,
+          Scene: SCENES[id],
+          scene: new THREE.Scene(),
+          camera: new THREE.PerspectiveCamera(FOV, 1, 1, 80),
+        })),
+    [key],
   );
   const pores = useMemo(() => boneTexture(), []);
   useEffect(() => () => pores.dispose(), [pores]);

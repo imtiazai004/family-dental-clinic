@@ -1,5 +1,6 @@
-// The scroll chapters on the home page. Each one pairs with a 3D scene of the same id
-// (components/three/Experience.tsx), and its step timings must stay in step with that scene's camera track.
+// The 3D scroll chapters. A chapter's id is its service's slug (content/services.ts), and it pairs with a
+// 3D scene of the same id (components/three/Experience.tsx). Its step timings must stay in step with
+// that scene's camera track.
 
 export type Step = {
   until: number; // shown until the chapter's scroll progress reaches this
@@ -18,7 +19,7 @@ export type ChapterContent = {
 
 export const chapters: ChapterContent[] = [
   {
-    id: "implant",
+    id: "dental-implant",
     height: "h-[520svh]",
     labels: ["Crown", "Screw", "Abutment", "Titanium post", "Jawbone"],
     cta: { label: "Ask about implants", service: "a dental implant" },
@@ -88,7 +89,7 @@ export const chapters: ChapterContent[] = [
     ],
   },
   {
-    id: "root-canal",
+    id: "root-canal-treatment",
     height: "h-[560svh]",
     labels: ["Enamel", "Dentin", "Pulp", "Root canal"],
     cta: { label: "Ask about root canals", service: "root canal treatment" },
@@ -126,3 +127,8 @@ export const chapters: ChapterContent[] = [
     ],
   },
 ];
+
+// The chapters shown on the home page, in order. Every chapter also opens its own service page.
+export const homeChapterIds = ["dental-implant", "crown", "root-canal-treatment"];
+
+export const chapterFor = (slug: string) => chapters.find((c) => c.id === slug);

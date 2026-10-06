@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { stage } from "@/lib/stage";
@@ -9,10 +10,25 @@ import type { ChapterContent } from "@/content/chapters";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const EYEBROW = "text-xs font-semibold uppercase tracking-[0.28em] text-plum-300";
+const TITLE = "mt-3 font-display text-4xl leading-tight tracking-tight sm:text-5xl";
+
 // One scroll chapter: a tall section whose text stays pinned while its 3D scene plays.
 // `pinFromTop` keeps the scene on screen from the very top of the page (the first chapter,
 // whose model is also the hero image).
-export default function Chapter({ chapter, pinFromTop = false }: { chapter: ChapterContent; pinFromTop?: boolean }) {
+// `pageTitle` is set when the chapter opens a service page: the first step then becomes the page's
+// main heading, under that name. `moreHref` adds a link to the service page after the last step.
+export default function Chapter({
+  chapter,
+  pinFromTop = false,
+  pageTitle,
+  moreHref,
+}: {
+  chapter: ChapterContent;
+  pinFromTop?: boolean;
+  pageTitle?: string;
+  moreHref?: string;
+}) {
   const section = useRef<HTMLElement>(null);
   const [step, setStep] = useState(0);
   const { id, steps, cta } = chapter;
@@ -56,17 +72,37 @@ export default function Chapter({ chapter, pinFromTop = false }: { chapter: Chap
                   i === step ? "opacity-100" : "pointer-events-none translate-y-3 opacity-0"
                 }`}
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-plum-300">{s.eyebrow}</p>
-                <h2 className="mt-3 font-display text-4xl leading-tight tracking-tight sm:text-5xl">{s.title}</h2>
+                {pageTitle && i === 0 ? (
+                  <h1>
+                    <span className={`block ${EYEBROW}`}>{pageTitle}</span>
+                    <span className={`block ${TITLE}`}>{s.title}</span>
+                  </h1>
+                ) : (
+                  <>
+                    <p className={EYEBROW}>{s.eyebrow}</p>
+                    <h2 className={TITLE}>{s.title}</h2>
+                  </>
+                )}
                 <p className="mt-4 text-base leading-relaxed text-cream/75 sm:text-lg">{s.body}</p>
                 {i === steps.length - 1 && (
-                  <a
-                    href={whatsappLink(`Hello ${clinic.name}, I would like to ask about ${cta.service}.`)}
-                    tabIndex={i === step ? 0 : -1}
-                    className="mt-6 inline-block rounded-full bg-cream px-6 py-3 text-sm font-semibold text-plum-900 transition hover:bg-white"
-                  >
-                    {cta.label}
-                  </a>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <a
+                      href={whatsappLink(`Hello ${clinic.name}, I would like to ask about ${cta.service}.`)}
+                      tabIndex={i === step ? 0 : -1}
+                      className="rounded-full bg-cream px-6 py-3 text-sm font-semibold text-plum-900 transition hover:bg-white"
+                    >
+                      {cta.label}
+                    </a>
+                    {moreHref && (
+                      <Link
+                        href={moreHref}
+                        tabIndex={i === step ? 0 : -1}
+                        className="rounded-full border border-cream/30 px-6 py-3 text-sm font-semibold transition hover:border-cream/70"
+                      >
+                        More about this treatment
+                      </Link>
+                    )}
+                  </div>
                 )}
               </div>
             ))}

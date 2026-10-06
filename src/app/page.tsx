@@ -1,18 +1,16 @@
-import Contact from "@/components/Contact";
-import Header from "@/components/Header";
+import Hero from "@/components/Hero";
 import Services from "@/components/Services";
-import SmoothScroll from "@/components/SmoothScroll";
+import Shell from "@/components/Shell";
 import Stage from "@/components/Stage";
+import { homeChapterIds } from "@/content/chapters";
 
 export default function Home() {
   return (
-    <SmoothScroll>
-      <Header />
-      <main>
-        <Stage />
-        <Services />
-        <Contact />
-      </main>
-    </SmoothScroll>
+    <Shell>
+      <Stage ids={homeChapterIds}>
+        <Hero />
+      </Stage>
+      <Services />
+    </Shell>
   );
 }
