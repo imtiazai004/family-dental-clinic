@@ -126,6 +126,32 @@ export function halve(g: THREE.BufferGeometry) {
   return { back: half(back), front: half(front) };
 }
 
+// A point on a line that runs level, and the level direction square to the line there. Seen from
+// above, that direction must point to the right of the way the line is going.
+export type PathPoint = { x: number; z: number; nx: number; nz: number };
+
+// A rounded bar laid along a level line, such as a strip of gum. `path` takes t from 0 to 1.
+// `round` is the share of the bar's length, at each end, over which it rounds off.
+export function bar(
+  path: (t: number) => PathPoint,
+  shape: { top: number; bottom: number; halfThickness: number; round?: number },
+  rows = 72,
+): THREE.BufferGeometry {
+  const { top, bottom, halfThickness, round = 0.05 } = shape;
+  const middle = (top + bottom) / 2;
+  const halfHeight = (top - bottom) / 2;
+  // Squarer than an ellipse, so the top of the bar is level across most of its width.
+  const bulge = (v: number) => Math.sign(v) * Math.sqrt(Math.abs(v));
+  return surface(rows, 32, (i, theta, out) => {
+    const t = i / (rows - 1);
+    const fromEnd = Math.min(t, 1 - t);
+    const end = fromEnd < round ? Math.sqrt(Math.max(0, 1 - (1 - fromEnd / round) ** 2)) : 1;
+    const at = path(t);
+    const across = halfThickness * end * bulge(Math.sin(theta));
+    out.set(at.x + at.nx * across, middle + halfHeight * end * bulge(Math.cos(theta)), at.z + at.nz * across);
+  });
+}
+
 // Flat shape in the x–y plane, facing +z.
 export function flat(points: XY[], z = 0): THREE.BufferGeometry {
   const g = new THREE.ShapeGeometry(new THREE.Shape(points.map(([x, y]) => new THREE.Vector2(x, y))));

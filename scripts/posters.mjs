@@ -23,6 +23,13 @@ const CHAPTERS = [
   { id: "dental-implant", start: { p: 0, h: 5.2, w: 2.5 }, parts: { p: 0.32, h: 8.8, w: 2.5 } },
   { id: "crown", start: { p: 0, h: 5.2, w: 2.5 }, parts: { p: 0.3, h: 8.1, w: 2.5 } },
   { id: "root-canal-treatment", start: { p: 0, h: 5.2, w: 2.5 }, parts: { p: 0.28, h: 4.5, w: 2.5 } },
+  { id: "dental-veneers", start: { p: 0, h: 5.2, w: 2.5 }, parts: { p: 0.3, h: 5.7, w: 2.8 } },
+  { id: "dental-filling", start: { p: 0, h: 5.2, w: 2.5 }, parts: { p: 0.25, h: 4.5, w: 2.5 } },
+  { id: "dental-bleaching", start: { p: 0, h: 3, w: 5.8 }, parts: { p: 0.95, h: 3, w: 5.8 } },
+  { id: "braces", start: { p: 0, h: 3, w: 5.8 }, parts: { p: 0.31, h: 3.4, w: 7 } },
+  { id: "complete-denture", start: { p: 0, h: 3.6, w: 6.6 }, parts: { p: 0.3, h: 5, w: 6.6 } },
+  { id: "removable-partial-denture", start: { p: 0, h: 3.6, w: 6.6 }, parts: { p: 0.3, h: 5.6, w: 6.6 } },
+  { id: "tooth-extraction", start: { p: 0, h: 5.2, w: 2.5 }, parts: { p: 0.7, h: 8.3, w: 2.5 } },
 ];
 
 const SCREEN = { width: 1440, height: 1200, deviceScaleFactor: 1.5 };

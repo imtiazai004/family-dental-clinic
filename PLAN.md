@@ -5,8 +5,9 @@ Last updated: 2026-10-06
 This file is the handover for the next working session. It says what exists, what the finished
 site looks like, the order to build it in, and what is still waiting on the clinic.
 
-**Status: steps 1 to 4 of section 7 are done and committed. Get the owner's go-ahead before
-starting step 5.**
+**Status: steps 1 to 4 of section 7 are done and committed. Step 5 is built on the branch
+`step-5-chapters` and is not committed yet. What is left is steps 6 and 7, and both wait on
+the clinic (section 10).**
 
 ## 1. Where things stand
 
@@ -15,8 +16,8 @@ The site has 13 pages:
 - **Home** (`/`): hero, three 3D scroll chapters (**Dental Implant**, **Crown**, **Root Canal
   Treatment**), the ten treatment cards, contact footer.
 - **Treatments** (`/services`): the ten cards.
-- **Ten service pages** (`/services/<slug>`). Implant, Crown and Root Canal open with their 3D
-  chapter. The other seven open with a plain dark header until their chapter is built.
+- **Ten service pages** (`/services/<slug>`). Every one opens with its own 3D chapter. The
+  plain dark header is still in the template, for a service added later without a chapter.
 - **Contact** (`/contact`): address, phone, WhatsApp, a directions link.
 - A styled **404** page.
 
@@ -38,7 +39,21 @@ where steps 3 and 4 ended and are merged into `main`.
 
 ### What has been checked
 
-All on 2026-10-06, after step 4:
+After step 5, on 2026-10-06:
+
+- `npx tsc --noEmit` and `npm run build` pass.
+- `npm run shots`, all of it: 101 screenshots at 1440×900 and 390×844, now with every one of
+  the seven new chapters at two to four scroll points. No console errors and no failed
+  requests.
+- Looked at, of those: every new chapter on the desktop at its "parts in view" point, most of
+  their other desktop shots, three phone shots (Veneers, Braces, Partial Denture), and the
+  Braces page opened with "reduce motion" on, which shows the still layout.
+- Not looked at after the last changes: the home page and the three older chapters. Their
+  screenshots were retaken without errors, and their own files were not changed, but two
+  shared ones were: the gum's look moved into `materials.tsx`, and `buildSocket` gained a
+  setting. Compare `home-crown-parts` and `home-rootcanal-inside` with how they looked before.
+
+After step 4, and not repeated since:
 
 - `npx tsc --noEmit` and `npm run build` pass.
 - Read from the built files: every page has a title, a description, its own address as the
@@ -75,6 +90,18 @@ and moving between pages without a full reload.
 - How long the still image stays up on a slow connection.
 - How a shared link really looks in WhatsApp, Facebook or X. That can only be seen once the
   site is online at its own address.
+
+### Things added in step 5 that the owner did not see in advance
+
+- **All seven chapters.** Section 8 says what each shows. The storyboards were followed, with
+  these differences:
+  - Braces: the braces go back on before the teeth move, and come off at the end.
+  - Partial Denture: the jaw it sits on is shown too, with its remaining teeth, so the gaps
+    and the clasps make sense.
+  - Tooth Extraction: the tooth does not return. The chapter ends on the empty socket.
+  - Veneers: the tooth under the shell is a darker shade, to show what the shell covers.
+- **New wording in every chapter**, listed in section 10 for a dentist to read.
+- **Bleaching has no part labels**, because nothing comes apart.
 
 ### Things added in step 4 that the owner did not see in advance
 
@@ -140,13 +167,13 @@ and moving between pages without a full reload.
 | `/services/dental-implant` | Dental Implant | Built |
 | `/services/crown` | Crown | Built |
 | `/services/root-canal-treatment` | Root Canal Treatment | Built |
-| `/services/dental-veneers` | Dental Veneers | To build |
-| `/services/dental-filling` | Dental Filling | To build |
-| `/services/dental-bleaching` | Dental Bleaching | To build |
-| `/services/braces` | Braces | To build |
-| `/services/complete-denture` | Complete Denture | To build |
-| `/services/removable-partial-denture` | Removable Partial Denture | To build |
-| `/services/tooth-extraction` | Tooth Extraction | To build |
+| `/services/dental-veneers` | Dental Veneers | Built |
+| `/services/dental-filling` | Dental Filling | Built |
+| `/services/dental-bleaching` | Dental Bleaching | Built |
+| `/services/braces` | Braces | Built |
+| `/services/complete-denture` | Complete Denture | Built |
+| `/services/removable-partial-denture` | Removable Partial Denture | Built |
+| `/services/tooth-extraction` | Tooth Extraction | Built |
 | `/about` | Doctor and clinic | None |
 | `/contact` | Address, map, hours, WhatsApp | None |
 | 404 | Not found | None |
@@ -257,7 +284,18 @@ Shared helpers worth knowing:
 
 - `rig.ts` → `useChapter()` runs scroll progress, the camera and the labels for a scene.
 - `parts/tooth.ts` → a two-rooted molar (`buildTooth`), its cut-open view
-  (`buildToothSection`), and gum and bone (`buildSocket`). Most remaining chapters reuse these.
+  (`buildToothSection`), and gum and bone (`buildSocket`, which takes the width of the tooth
+  at the gum line). Also the decay and cavity for the Filling chapter (`buildCavitySection`)
+  and the empty socket for the Extraction chapter (`buildEmptySocket`).
+- `parts/incisor.ts` → a front tooth with one root (`buildIncisor`), and the veneer shell that
+  fits its front face (`buildVeneer`).
+- `parts/arch.ts` → six front teeth in a curved strip of gum, as seen in a smile. Bleaching and
+  Braces both stand on it. `parts/braces.ts` adds the brackets, the wire, and how far each
+  tooth starts out of line.
+- `parts/denture.ts` → a whole jaw of fourteen teeth on a horseshoe (`jawTeeth`,
+  `buildJawRidge`), and the frame, clasps and bases of the partial denture (`buildPartial`).
+- `geometry.ts` → `bar()` makes a rounded bar along any level line. The gum strips and the
+  denture bases are all this.
 - `materials.tsx` → shared looks for porcelain, titanium, root, gum and bone.
 - For a cut-open view, split the shape with `halve()` in `geometry.ts` and give the half behind
   the cut `SUNK` from `materials.tsx` (`TissueMeshes` takes `sunk`). Without it, specks of the
@@ -364,9 +402,9 @@ Each step ends with `npx tsc --noEmit`, `npm run build` and `npm run shots`.
 - `npm run build:launch` fails while any service is marked `draft: true`, among other things
   (section 1 says why this is not the everyday build).
 
-**Step 5: the seven remaining 3D chapters**
+**Step 5: the seven remaining 3D chapters** (done)
 
-One at a time, each on its own service page, in the order in section 8.
+Each on its own service page. Section 8 says what each one shows.
 
 **Step 6: clinic content**
 
@@ -381,21 +419,30 @@ happen at any point after step 2.
 - Set `url`, `confirmed` and `hours` in `src/content/clinic.ts`, then build with
   `npm run build:launch`. Share a link in WhatsApp to see the preview.
 
-## 8. Remaining 3D chapters (7)
+## 8. The seven chapters built in step 5
 
-Suggested order, easiest reuse first. Each idea is a starting storyboard, not a fixed design.
+What each one shows, as built. None of them is on the home page.
 
-1. **Dental Veneers**: a thin shell lifts off the front face of a tooth, then returns.
-   Needs a front (single-rooted) tooth shape, which Bleaching and Braces can reuse.
-2. **Dental Filling**: cut-open molar with a cavity; filling material goes in layer by layer.
-   Reuses `buildToothSection`. Catalogue text is incomplete (see section 10).
-3. **Dental Bleaching**: no exploded view. A row of front teeth goes from a darker shade to a
-   lighter one as the visitor scrolls. Catalogue text is incomplete (see section 10).
-4. **Braces**: brackets and wire come away from a row of teeth, then the teeth straighten.
-5. **Complete Denture**: the pink base and the set of teeth separate, then rejoin.
-6. **Removable Partial Denture**: metal frame, clasps and teeth separate, then rejoin.
-7. **Tooth Extraction**: the tooth lifts gently out of its socket. Keep it calm: no forceps,
-   no blood, no decayed-looking tooth.
+1. **Dental Veneers**: a front tooth in gum and bone. A thin shell comes off its front face,
+   the camera moves round to show how thin it is, and the shell goes back on. The tooth under
+   it is a shade darker than the shell.
+2. **Dental Filling**: a molar cut open, with a dark patch of decay under the biting surface.
+   The patch is cleared to a clean space, which fills in three layers. Catalogue text is
+   incomplete (see section 10).
+3. **Dental Bleaching**: no exploded view and no part labels. Six front teeth in a strip of
+   gum go from a darker shade to a lighter one, one tooth after another across the row.
+   Catalogue text is incomplete (see section 10).
+4. **Braces**: six front teeth, out of line, with a bracket on each and a wire through them.
+   The brackets and wire come away and go back, the teeth move into line with the wire bending
+   as they go, and at the end the braces fade off.
+5. **Complete Denture**: fourteen teeth on a pink horseshoe base. The set of teeth rises off
+   the base and returns.
+6. **Removable Partial Denture**: a jaw with the last three teeth missing on each side. The
+   denture lifts off it and comes apart into a metal frame with two clasps, two pink bases and
+   the six teeth, then goes back.
+7. **Tooth Extraction**: a molar rises out of gum and bone, turning a little, and fades. It
+   does not go back. What is left is the empty socket, drawn as a soft shadow. No instrument,
+   no blood, and the tooth looks healthy.
 
 ## 9. Known defects in what is built
 
@@ -405,6 +452,12 @@ Suggested order, easiest reuse first. Each idea is a starting storyboard, not a 
   pulp chamber. In a real tooth that spot is bone. It is a few pixels wide.
 - **Phone layout**: in the Crown "Porcelain, metal, or both" step, the top of the prepared
   tooth still shows faintly behind the small "THE CAP" line. The title and text are clear.
+- **Front teeth** (Veneers, Bleaching, Braces, both dentures) are one simple wedge shape at
+  different sizes. The corner teeth are not pointed, and every front tooth has a flat edge.
+- **Gum strips and denture bases** are plain rounded bars. They do not rise between the teeth
+  the way real gum does.
+- **Partial Denture**: the replacement teeth stand a little higher than the natural ones
+  beside them, because their base sits on top of the gum.
 
 ## 10. Waiting on the clinic
 
@@ -435,6 +488,19 @@ Needs a dentist to read:
 - **Wording written for the site, not from the catalogue**: the part descriptions in the
   Implant chapter, "The tooth is shaped so the crown can sit over it like a cap", and the
   pulp explanation in the Root Canal chapter.
+- **The same, from step 5.** Each of these describes what the 3D shows, in words the
+  catalogue does not use:
+  - Filling: "The damaged part is cleared away, and the space it leaves is filled", and the
+    title "Filled, layer by layer".
+  - Bleaching: "Whitening lightens the shade of the teeth."
+  - Braces: "A bracket sits on each tooth, and one wire runs through them all", and "With the
+    teeth in line, the braces come off."
+  - Complete Denture: "The base holds the teeth together, as one piece."
+  - Partial Denture: "a metal frame runs round the inside of the jaw, and a clasp holds on to
+    the tooth beside each gap", and "The replacement teeth sit on a gum-coloured base".
+- **What the step 5 models show.** Confirm each matches what the clinic offers: a partial
+  denture with a metal frame and clasps (not an all-plastic one), metal braces, and a filling
+  in a pale tooth colour.
 
 Still open:
 

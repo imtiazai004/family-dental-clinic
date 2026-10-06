@@ -10,6 +10,7 @@ import {
   revolve,
   smooth,
   surface,
+  TAU,
   thread,
   threadedRows,
   tissue,
@@ -93,9 +94,11 @@ const merge = (parts: THREE.BufferGeometry[]) => {
   return merged;
 };
 
+export const buildMolarCrown = () => revolve(crownProfile(), 96, { modifier: molar });
+
 export function buildTooth() {
   return {
-    crown: revolve(crownProfile(), 96, { modifier: molar }),
+    crown: buildMolarCrown(),
     root: merge([root(1), root(-1)]),
   };
 }
@@ -284,6 +287,78 @@ export function buildToothSection() {
   return { enamel, dentin, pulp, access };
 }
 
+// --- Filling chapter: decay under the biting surface, drawn on the same cut face. ---
+
+export function buildCavitySection() {
+  const crown = crownProfile();
+  const nearCentre = ([x]: XY) => Math.abs(x) <= 0.22;
+  // The space left once the decay is cleared: open at the biting surface, with a rounded floor.
+  const cavity = flat([
+    ...outline(crown, Math.PI).filter(nearCentre).reverse(),
+    ...outline(crown, 0).filter(nearCentre).slice(1),
+    [0.22, 0.74],
+    [0.15, 0.62],
+    [-0.15, 0.62],
+    [-0.22, 0.74],
+  ]);
+
+  const blot: XY[] = [
+    [-0.1, 1.03],
+    [0, 1.025],
+    [0.1, 1.03],
+    [0.19, 0.95],
+    [0.2, 0.84],
+    [0.14, 0.72],
+    [0.02, 0.67],
+    [-0.12, 0.71],
+    [-0.2, 0.83],
+    [-0.18, 0.95],
+  ];
+  const curve = new THREE.CatmullRomCurve3(
+    blot.map(([x, y]) => new THREE.Vector3(x, y, 0)),
+    true,
+  );
+  const decay = flat(curve.getPoints(48).map((v) => [v.x, v.y] as XY));
+
+  return { cavity, decay };
+}
+
+// --- Extraction chapter: what the tooth leaves behind. ---
+
+// The empty socket, as dark shapes laid on the gum and bone from buildSocket(cut): on each cut face,
+// the outline of the roots where they came through it, and on top of the gum, where the tooth stood.
+// While the tooth is in place it covers them.
+export function buildEmptySocket(cut: Cut) {
+  const from = THREE.MathUtils.degToRad(cut.from);
+  const to = THREE.MathUtils.degToRad(cut.to);
+  const faces: THREE.BufferGeometry[] = [];
+  for (const theta of [from, to]) {
+    const dx = Math.cos(theta);
+    const dz = Math.sin(theta);
+    for (const side of [1, -1]) {
+      // Where each slice of the root meets the face: from `near` to `far`, measured out from the axis.
+      const near: XY[] = [];
+      const far: XY[] = [];
+      for (let i = 1; i < ROOT_ROW_COUNT; i++) {
+        const r = rootRow(side, i);
+        if (r.rx < 1e-4) continue;
+        const a = (dx / r.rx) ** 2 + (dz / r.rz) ** 2;
+        const b = (-2 * dx * r.cx) / r.rx ** 2;
+        const c = (r.cx / r.rx) ** 2 - 1;
+        const reach = b * b - 4 * a * c;
+        if (reach <= 0) continue;
+        const end = (-b + Math.sqrt(reach)) / (2 * a);
+        if (end < 0.01) continue;
+        near.push([Math.max(0, (-b - Math.sqrt(reach)) / (2 * a)), r.y]);
+        far.push([end, r.y]);
+      }
+      if (far.length > 2) faces.push(flat([...far, ...near.reverse()]).rotateY(-theta));
+    }
+  }
+  const mouth = new THREE.CircleGeometry(NECK_RADIUS - 0.02, 48, to, TAU - (to - from)).rotateX(Math.PI / 2);
+  return { faces: merge(faces), mouth };
+}
+
 // The line a canal follows, used to guide the instrument. `side` may be anything from -1 to 1.
 export function canalAxis(side: number, origin: THREE.Vector3, direction: THREE.Vector3) {
   const top = rootRing(side, 0);
@@ -335,13 +410,14 @@ export const NESTED: Cut = { from: 18, to: 162 };
 export const BEHIND: Cut = { from: -12, to: 192 };
 const GUM_BASE = -0.4;
 
-export function buildSocket(cut: Cut) {
+// `neck` is the radius of the tooth at the gum line; the gum is level out to just past it.
+export function buildSocket(cut: Cut, neck = NECK_RADIUS) {
   const top = smooth(
     [
       [0, 0],
-      [0.5, 0],
-      [0.56, 0],
-      [0.66, -0.04],
+      [neck, 0],
+      [neck + 0.06, 0],
+      [neck + 0.16, -0.04],
       [0.85, -0.1],
       [CORE_RADIUS, -0.14],
     ],

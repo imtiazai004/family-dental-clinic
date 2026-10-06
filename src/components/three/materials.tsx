@@ -14,6 +14,7 @@ export const PORCELAIN = {
   sheenColor: "#fff4e6",
 };
 export const ROOT = { color: "#e7d2a4", roughness: 0.6 };
+export const GUM = { color: "#e78f9b", roughness: 0.42, clearcoat: 0.35, clearcoatRoughness: 0.4 };
 
 // For a surface that ends on a plane which has flat shapes drawn on it (the cut face of a tooth).
 // Where such a surface meets the plane it is seen edge-on, and specks of it show through the flat
@@ -37,7 +38,7 @@ export function TissueMeshes({
   return (
     <>
       <mesh geometry={gum.body}>
-        <meshPhysicalMaterial color="#e78f9b" roughness={0.42} clearcoat={0.35} clearcoatRoughness={0.4} {...depth} />
+        <meshPhysicalMaterial {...GUM} {...depth} />
       </mesh>
       {gum.faces.map((g, i) => (
         <mesh key={i} geometry={g}>

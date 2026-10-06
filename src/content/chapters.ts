@@ -126,6 +126,224 @@ export const chapters: ChapterContent[] = [
       },
     ],
   },
+  {
+    id: "dental-veneers",
+    screens: 4.6,
+    labels: ["Veneer", "Front surface", "Root"],
+    cta: { label: "Ask about veneers", service: "dental veneers" },
+    steps: [
+      {
+        until: 0.39,
+        eyebrow: "04 — Dental Veneers",
+        title: "A thin shell for the front of a tooth",
+        body: "Dental veneers are thin, custom-made shells that cover the front surface of teeth to improve their appearance.",
+      },
+      {
+        until: 0.57,
+        eyebrow: "The shell",
+        title: "Porcelain or composite resin",
+        body: "Each veneer is custom-made, from porcelain or composite resin, to cover the front surface of its tooth.",
+      },
+      {
+        until: 0.76,
+        eyebrow: "Underneath",
+        title: "What a veneer covers",
+        body: "Veneers are used to fix imperfections such as discoloration, chips, or misalignment.",
+      },
+      {
+        until: Infinity,
+        eyebrow: "In place",
+        title: "A new front surface",
+        body: "Once in place, the veneer covers the front of the tooth and improves its appearance.",
+      },
+    ],
+  },
+  {
+    id: "dental-filling",
+    screens: 5,
+    labels: ["Enamel", "Decay", "Dentin", "Pulp"],
+    cta: { label: "Ask about fillings", service: "a dental filling" },
+    steps: [
+      {
+        until: 0.3,
+        eyebrow: "05 — Dental Filling",
+        title: "Repairing a tooth damaged by decay",
+        body: "Teeth fillings are a way to repair a tooth damaged by decay and restore its shape.",
+      },
+      {
+        until: 0.5,
+        eyebrow: "Inside the tooth",
+        title: "The damaged part",
+        body: "With the tooth cut open, the decay shows as a dark patch under the biting surface.",
+      },
+      {
+        until: 0.82,
+        eyebrow: "The filling",
+        title: "Filled, layer by layer",
+        body: "The damaged part is cleared away, and the space it leaves is filled.",
+      },
+      {
+        until: Infinity,
+        eyebrow: "Done",
+        title: "Its shape restored",
+        body: "The filling repairs the tooth and restores its shape.",
+      },
+    ],
+  },
+  {
+    id: "dental-bleaching",
+    screens: 4,
+    labels: [],
+    cta: { label: "Ask about whitening", service: "tooth whitening" },
+    steps: [
+      {
+        until: 0.3,
+        eyebrow: "06 — Dental Bleaching",
+        title: "Professional tooth whitening",
+        body: "Brighten your smile with professional tooth whitening.",
+      },
+      {
+        until: 0.78,
+        eyebrow: "Shade by shade",
+        title: "From a darker shade to a lighter one",
+        body: "Whitening lightens the shade of the teeth.",
+      },
+      {
+        until: Infinity,
+        eyebrow: "Done",
+        title: "A brighter smile",
+        body: "The same teeth, in a lighter shade.",
+      },
+    ],
+  },
+  {
+    id: "braces",
+    screens: 5.2,
+    labels: ["Bracket", "Wire"],
+    cta: { label: "Ask about braces", service: "braces" },
+    steps: [
+      {
+        until: 0.36,
+        eyebrow: "07 — Braces",
+        title: "More than a smile transformation",
+        body: "Braces are more than just a smile transformation – they are a journey towards better oral health and confidence.",
+      },
+      {
+        until: 0.56,
+        eyebrow: "The parts",
+        title: "Brackets and a wire",
+        body: "A bracket sits on each tooth, and one wire runs through them all.",
+      },
+      {
+        until: 0.86,
+        eyebrow: "One step at a time",
+        title: "Bringing the teeth into line",
+        body: "From correcting alignment issues to improving bite, braces help in shaping the perfect smile, one step at a time!",
+      },
+      {
+        until: Infinity,
+        eyebrow: "Done",
+        title: "The smile, shaped",
+        body: "With the teeth in line, the braces come off.",
+      },
+    ],
+  },
+  {
+    id: "complete-denture",
+    screens: 4.6,
+    labels: ["Teeth", "Base"],
+    cta: { label: "Ask about dentures", service: "a complete denture" },
+    steps: [
+      {
+        until: 0.39,
+        eyebrow: "08 — Complete Denture",
+        title: "Replacing all the teeth in a jaw",
+        body: "A complete denture is a removable dental appliance designed to replace all missing teeth in the upper or lower jaw.",
+      },
+      {
+        until: 0.57,
+        eyebrow: "The teeth",
+        title: "A full row of teeth",
+        body: "The teeth are set in a row that follows the curve of the jaw.",
+      },
+      {
+        until: 0.76,
+        eyebrow: "The base",
+        title: "A gum-coloured base",
+        body: "The base holds the teeth together, as one piece.",
+      },
+      {
+        until: Infinity,
+        eyebrow: "Together",
+        title: "Function, looks and confidence",
+        body: "It restores functionality, aesthetics, and confidence for individuals with total tooth loss.",
+      },
+    ],
+  },
+  {
+    id: "removable-partial-denture",
+    screens: 4.6,
+    labels: ["Teeth", "Base", "Clasp", "Metal frame"],
+    cta: { label: "Ask about partial dentures", service: "a removable partial denture" },
+    steps: [
+      {
+        until: 0.39,
+        eyebrow: "09 — Removable Partial Denture",
+        title: "Replacing the teeth that are missing",
+        body: "A removable partial denture (RPD) is a customized dental appliance designed to replace missing teeth.",
+      },
+      {
+        until: 0.57,
+        eyebrow: "The frame",
+        title: "A frame with clasps",
+        body: "In this one, a metal frame runs round the inside of the jaw, and a clasp holds on to the tooth beside each gap.",
+      },
+      {
+        until: 0.76,
+        eyebrow: "The teeth",
+        title: "New teeth on a pink base",
+        body: "The replacement teeth sit on a gum-coloured base, where the missing teeth were.",
+      },
+      {
+        until: Infinity,
+        eyebrow: "In place",
+        title: "Easy to take out",
+        body: "It restores function and aesthetics, and is easily removable for cleaning and maintenance.",
+      },
+    ],
+  },
+  {
+    id: "tooth-extraction",
+    screens: 4.6,
+    labels: ["Tooth", "Socket", "Jawbone"],
+    cta: { label: "Ask about extractions", service: "a tooth extraction" },
+    steps: [
+      {
+        until: 0.3,
+        eyebrow: "10 — Tooth Extraction",
+        title: "Removing a tooth from its socket",
+        body: "Tooth extraction is a dental procedure where a damaged or decayed tooth is removed from its socket in the jaw.",
+      },
+      {
+        until: 0.5,
+        eyebrow: "Why",
+        title: "When a tooth is beyond repair",
+        body: "It is often necessary when a tooth is beyond repair due to infection, crowding, or other oral health issues.",
+      },
+      {
+        until: 0.8,
+        eyebrow: "The procedure",
+        title: "Out of its socket",
+        body: "The tooth is removed from its socket in the jaw.",
+      },
+      {
+        until: Infinity,
+        eyebrow: "Afterwards",
+        title: "Care while it heals",
+        body: "After extraction, proper care is essential for healing and to avoid complications such as infection.",
+      },
+    ],
+  },
 ];
 
 // The chapters shown on the home page, in order. Every chapter also opens its own service page.
