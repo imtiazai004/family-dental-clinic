@@ -17,8 +17,28 @@
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* `live:` applies while the 3D scroll chapters are running, `still:` while they are shown as images
+   and plain text. See lib/live.ts. */
+@custom-variant live (html[data-live] &);
+@custom-variant still (html:not([data-live]) &);
+
 html {
   background: var(--color-plum-950);
+}
+
+/* Keyboard focus: a light ring between two dark ones, so it shows on dark and on light backgrounds. */
+:focus-visible {
+  outline: 2px solid var(--color-plum-900);
+  outline-offset: 4px;
+  box-shadow:
+    0 0 0 2px var(--color-plum-900),
+    0 0 0 4px var(--color-cream);
+}
+
+/* Not for something that is only focused by a link jumping to it, like the page's main content. */
+[tabindex="-1"]:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 body {
@@ -32,4 +52,30 @@ body {
 
 .stage-bg {
   background: radial-gradient(120% 90% at 70% 40%, #4a2656 0%, #22112a 48%, #160b19 100%);
+}
+
+/* The still image that stands in for a scene sits exactly where the scene's camera puts the model.
+   The numbers are fitW, fitH, shiftX and shiftY in components/three/rig.ts; --margin is how much
+   wider than the camera's shot the image was cut (scripts/posters.mjs). Change them together. */
+.poster {
+  --margin: 1.12;
+  --x: 50%;
+  --y: 31%;
+  --w: 86%;
+  --h: 46%;
+  position: absolute;
+  left: calc(var(--x) - var(--w) * var(--margin) / 2);
+  top: calc(var(--y) - var(--h) * var(--margin) / 2);
+  width: calc(var(--w) * var(--margin));
+  height: calc(var(--h) * var(--margin));
+  object-fit: contain;
+}
+
+@media (min-width: 1024px) {
+  .poster {
+    --x: 70%;
+    --y: 48%;
+    --w: 46%;
+    --h: 78%;
+  }
 }

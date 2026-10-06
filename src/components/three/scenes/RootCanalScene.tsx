@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { lerp, ramp, smoothstep } from "@/lib/stage";
-import { disposeTissue, TAU } from "../geometry";
-import { PORCELAIN, ROOT, TissueMeshes } from "../materials";
+import { disposeTissue, halve, TAU } from "../geometry";
+import { PORCELAIN, ROOT, SUNK, TissueMeshes } from "../materials";
 import { BEHIND, buildFile, buildSocket, buildTooth, buildToothSection, canalAxis } from "../parts/tooth";
 import { ease, useChapter, type Anchor, type Shot, type Track } from "../rig";
 
@@ -34,9 +34,7 @@ const HEALTHY = new THREE.Color("#e2607a");
 const INFECTED = new THREE.Color("#7d2a3a");
 const EMPTY = "#3a1c22";
 
-// Clipping planes in the tooth's own space; each frame they are moved to wherever the tooth is.
-const KEEP_BACK = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
-const KEEP_FRONT = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+// Clipping plane in the tooth's own space; each frame it is moved to wherever the tooth is.
 const keepBelow = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
 
 // How far the file's tip is along a canal, measured from the canal opening (negative = above it).
@@ -64,27 +62,31 @@ const direction = new THREE.Vector3();
 const UP = new THREE.Vector3(0, 1, 0);
 
 export default function RootCanalScene({ id, pores }: { id: string; pores: THREE.Texture }) {
-  const geo = useMemo(
-    () => ({ ...buildTooth(), section: buildToothSection(), file: buildFile(), ...buildSocket(BEHIND) }),
-    [],
-  );
+  const geo = useMemo(() => {
+    const tooth = buildTooth();
+    return {
+      crown: halve(tooth.crown),
+      root: halve(tooth.root),
+      section: buildToothSection(),
+      file: buildFile(),
+      ...buildSocket(BEHIND),
+    };
+  }, []);
   useEffect(
     () => () => {
-      [geo.crown, geo.root, geo.file.shaft, geo.file.handle, ...Object.values(geo.section)].forEach((g) =>
-        g.dispose(),
-      );
+      [
+        ...Object.values(geo.crown),
+        ...Object.values(geo.root),
+        ...Object.values(geo.file),
+        ...Object.values(geo.section),
+      ].forEach((g) => g.dispose());
       disposeTissue(geo.gum);
       disposeTissue(geo.bone);
     },
     [geo],
   );
 
-  const clip = useMemo(() => {
-    const back = new THREE.Plane();
-    const front = new THREE.Plane();
-    const fill = new THREE.Plane();
-    return { back, front, fill, backOnly: [back], frontOnly: [front], fillOnly: [fill] };
-  }, []);
+  const fillClip = useMemo(() => [new THREE.Plane()], []);
 
   const root = useRef<THREE.Group>(null);
   const tooth = useRef<THREE.Group>(null);
@@ -92,6 +94,7 @@ export default function RootCanalScene({ id, pores }: { id: string; pores: THREE
   const frontCrown = useRef<THREE.MeshPhysicalMaterial>(null);
   const frontRoot = useRef<THREE.MeshStandardMaterial>(null);
   const pulp = useRef<THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>>(null);
+  const empty = useRef<THREE.Mesh>(null);
   const access = useRef<THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>>(null);
   const fill = useRef<THREE.Mesh>(null);
   const restoration = useRef<THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>>(null);
@@ -125,6 +128,8 @@ export default function RootCanalScene({ id, pores }: { id: string; pores: THREE
     pulp.current!.material.color.lerpColors(HEALTHY, INFECTED, smoothstep(0.27, 0.36, p));
     pulp.current!.material.opacity = 1 - smoothstep(0.45, 0.63, p);
     pulp.current!.visible = p < 0.63;
+    // The emptied canals lie under the pulp. Until the pulp starts to go they would only darken its edge.
+    empty.current!.visible = p > 0.44;
     access.current!.material.opacity = smoothstep(0.37, 0.41, p);
     access.current!.visible = p > 0.37;
 
@@ -143,9 +148,7 @@ export default function RootCanalScene({ id, pores }: { id: string; pores: THREE
     fileSpin.current!.rotation.y = p * 260;
 
     root.current!.updateWorldMatrix(true, true);
-    clip.back.copy(KEEP_BACK).applyMatrix4(tooth.current!.matrixWorld);
-    clip.front.copy(KEEP_FRONT).applyMatrix4(front.current!.matrixWorld);
-    clip.fill.copy(keepBelow).applyMatrix4(tooth.current!.matrixWorld);
+    fillClip[0].copy(keepBelow).applyMatrix4(tooth.current!.matrixWorld);
 
     return side ? smoothstep(0.85, 1, open) * smoothstep(0.19, 0.23, p) * (1 - smoothstep(0.33, 0.37, p)) : 0;
   });
@@ -154,11 +157,11 @@ export default function RootCanalScene({ id, pores }: { id: string; pores: THREE
     <group ref={root}>
       <group ref={tooth} scale={[1.05, 1, 0.95]}>
         {/* Back half of the tooth, cut at z = 0. */}
-        <mesh geometry={geo.crown}>
-          <meshPhysicalMaterial {...PORCELAIN} clippingPlanes={clip.backOnly} />
+        <mesh geometry={geo.crown.back}>
+          <meshPhysicalMaterial {...PORCELAIN} {...SUNK} />
         </mesh>
-        <mesh geometry={geo.root}>
-          <meshStandardMaterial {...ROOT} clippingPlanes={clip.backOnly} />
+        <mesh geometry={geo.root.back}>
+          <meshStandardMaterial {...ROOT} {...SUNK} />
         </mesh>
 
         {/* The cut face. */}
@@ -168,14 +171,14 @@ export default function RootCanalScene({ id, pores }: { id: string; pores: THREE
         <mesh geometry={geo.section.dentin} position-z={Z.dentin}>
           <meshStandardMaterial color="#edd9a6" roughness={0.8} />
         </mesh>
-        <mesh geometry={geo.section.pulp} position-z={Z.empty}>
+        <mesh ref={empty} geometry={geo.section.pulp} position-z={Z.empty}>
           <meshStandardMaterial color={EMPTY} roughness={0.9} />
         </mesh>
         <mesh ref={access} geometry={geo.section.access} position-z={Z.empty}>
           <meshStandardMaterial color={EMPTY} roughness={0.9} transparent />
         </mesh>
         <mesh ref={fill} geometry={geo.section.pulp} position-z={Z.fill}>
-          <meshStandardMaterial color="#f29a6b" roughness={0.6} clippingPlanes={clip.fillOnly} />
+          <meshStandardMaterial color="#f29a6b" roughness={0.6} clippingPlanes={fillClip} />
         </mesh>
         <mesh ref={pulp} geometry={geo.section.pulp} position-z={Z.pulp}>
           <meshStandardMaterial roughness={0.5} transparent />
@@ -186,11 +189,11 @@ export default function RootCanalScene({ id, pores }: { id: string; pores: THREE
 
         {/* Front half, which moves away to open the tooth. */}
         <group ref={front}>
-          <mesh geometry={geo.crown}>
-            <meshPhysicalMaterial ref={frontCrown} {...PORCELAIN} clippingPlanes={clip.frontOnly} transparent />
+          <mesh geometry={geo.crown.front}>
+            <meshPhysicalMaterial ref={frontCrown} {...PORCELAIN} transparent />
           </mesh>
-          <mesh geometry={geo.root}>
-            <meshStandardMaterial ref={frontRoot} {...ROOT} clippingPlanes={clip.frontOnly} transparent />
+          <mesh geometry={geo.root.front}>
+            <meshStandardMaterial ref={frontRoot} {...ROOT} transparent />
           </mesh>
         </group>
       </group>
@@ -206,7 +209,7 @@ export default function RootCanalScene({ id, pores }: { id: string; pores: THREE
         </group>
       </group>
 
-      <TissueMeshes gum={geo.gum} bone={geo.bone} pores={pores} />
+      <TissueMeshes gum={geo.gum} bone={geo.bone} pores={pores} sunk />
     </group>
   );
 }

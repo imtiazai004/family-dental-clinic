@@ -19,6 +19,11 @@ export const viewport: Viewport = {
   themeColor: "#160b19",
 };
 
+// Turns the 3D scroll chapters on (see lib/live.ts) unless the visitor has asked for less motion or
+// the browser has no WebGL. It runs before the page is first drawn, so the layout never jumps.
+const LIVE_SCRIPT =
+  'if(window.WebGLRenderingContext&&!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.dataset.live=""';
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Dentist",
@@ -35,7 +40,11 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${manrope.variable}`}>
+    // The script marks <html> before React takes over the page, so React must not flag the difference.
+    <html lang="en" className={`${fraunces.variable} ${manrope.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: LIVE_SCRIPT }} />
+      </head>
       <body>
         {children}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />

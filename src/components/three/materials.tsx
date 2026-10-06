@@ -15,24 +15,41 @@ export const PORCELAIN = {
 };
 export const ROOT = { color: "#e7d2a4", roughness: 0.6 };
 
+// For a surface that ends on a plane which has flat shapes drawn on it (the cut face of a tooth).
+// Where such a surface meets the plane it is seen edge-on, and specks of it show through the flat
+// shapes. This pushes it back in depth, most where it is most edge-on, so the flat shapes always win.
+export const SUNK = { polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 2 };
+
 // Gum and bone with their cut faces. `pores` is the shared spongy-bone texture.
-export function TissueMeshes({ gum, bone, pores }: { gum: Tissue; bone: Tissue; pores: THREE.Texture }) {
+// `sunk` is for a scene that draws on a plane these meet: see SUNK.
+export function TissueMeshes({
+  gum,
+  bone,
+  pores,
+  sunk = false,
+}: {
+  gum: Tissue;
+  bone: Tissue;
+  pores: THREE.Texture;
+  sunk?: boolean;
+}) {
+  const depth = sunk ? SUNK : null;
   return (
     <>
       <mesh geometry={gum.body}>
-        <meshPhysicalMaterial color="#e78f9b" roughness={0.42} clearcoat={0.35} clearcoatRoughness={0.4} />
+        <meshPhysicalMaterial color="#e78f9b" roughness={0.42} clearcoat={0.35} clearcoatRoughness={0.4} {...depth} />
       </mesh>
       {gum.faces.map((g, i) => (
         <mesh key={i} geometry={g}>
-          <meshStandardMaterial color="#d97c8a" roughness={0.6} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#d97c8a" roughness={0.6} side={THREE.DoubleSide} {...depth} />
         </mesh>
       ))}
       <mesh geometry={bone.body}>
-        <meshStandardMaterial color="#eadbc0" roughness={0.85} />
+        <meshStandardMaterial color="#eadbc0" roughness={0.85} {...depth} />
       </mesh>
       {bone.faces.map((g, i) => (
         <mesh key={i} geometry={g}>
-          <meshStandardMaterial map={pores} roughness={0.9} side={THREE.DoubleSide} />
+          <meshStandardMaterial map={pores} roughness={0.9} side={THREE.DoubleSide} {...depth} />
         </mesh>
       ))}
     </>

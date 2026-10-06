@@ -11,7 +11,7 @@ export type Step = {
 
 export type ChapterContent = {
   id: string;
-  height: string; // Tailwind class: how much scrolling the chapter takes
+  screens: number; // how many screens of scrolling the chapter takes
   steps: Step[];
   labels: string[]; // part names; order matches the scene's anchors
   cta: { label: string; service: string };
@@ -20,7 +20,7 @@ export type ChapterContent = {
 export const chapters: ChapterContent[] = [
   {
     id: "dental-implant",
-    height: "h-[520svh]",
+    screens: 5.2,
     labels: ["Crown", "Screw", "Abutment", "Titanium post", "Jawbone"],
     cta: { label: "Ask about implants", service: "a dental implant" },
     steps: [
@@ -58,7 +58,7 @@ export const chapters: ChapterContent[] = [
   },
   {
     id: "crown",
-    height: "h-[460svh]",
+    screens: 4.6,
     labels: ["Porcelain", "Metal", "Prepared tooth", "Root"],
     cta: { label: "Ask about crowns", service: "a crown" },
     steps: [
@@ -90,7 +90,7 @@ export const chapters: ChapterContent[] = [
   },
   {
     id: "root-canal-treatment",
-    height: "h-[560svh]",
+    screens: 5.6,
     labels: ["Enamel", "Dentin", "Pulp", "Root canal"],
     cta: { label: "Ask about root canals", service: "root canal treatment" },
     steps: [
@@ -132,3 +132,8 @@ export const chapters: ChapterContent[] = [
 export const homeChapterIds = ["dental-implant", "crown", "root-canal-treatment"];
 
 export const chapterFor = (slug: string) => chapters.find((c) => c.id === slug);
+
+// A chapter's still images, made by `npm run posters`: the scene as the chapter opens, and with its
+// parts in view. They stand in for the scene while it loads and wherever 3D does not run.
+export const poster = (id: string, view: "start" | "parts") =>
+  `/posters/${id}${view === "parts" ? "-parts" : ""}.webp`;

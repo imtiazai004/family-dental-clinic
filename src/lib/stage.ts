@@ -9,6 +9,8 @@ export const stage = {
   chapters: {} as Record<string, ChapterBounds>,
   // Part labels live in the DOM (Stage.tsx); each scene moves its own every frame.
   labels: {} as Record<string, (HTMLElement | null)[]>,
+  // The still image shown in a scene's place until the scene has drawn (Stage.tsx).
+  posters: {} as Record<string, HTMLElement | null>,
   active: true, // the 3D stage is on screen
   dragging: false,
   dragYaw: 0,

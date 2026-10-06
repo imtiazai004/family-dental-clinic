@@ -103,6 +103,29 @@ export function revolve(
   );
 }
 
+// Splits a shape built around the y axis into its back (z < 0) and front halves, for a scene that
+// opens it along the plane z = 0. The halves are real geometry rather than one mesh clipped in two:
+// a clipped mesh leaks specks of its surface through anything laid on the cut.
+// Every revolve() and surface() here has a seam on that plane, so no triangle straddles it.
+export function halve(g: THREE.BufferGeometry) {
+  const z = g.attributes.position as THREE.BufferAttribute;
+  const index = g.index!.array;
+  const back: number[] = [];
+  const front: number[] = [];
+  for (let i = 0; i < index.length; i += 3) {
+    const side = z.getZ(index[i]) + z.getZ(index[i + 1]) + z.getZ(index[i + 2]) < 0 ? back : front;
+    side.push(index[i], index[i + 1], index[i + 2]);
+  }
+  const half = (triangles: number[]) => {
+    const h = new THREE.BufferGeometry();
+    h.setAttribute("position", g.attributes.position);
+    h.setAttribute("normal", g.attributes.normal);
+    h.setIndex(triangles);
+    return h;
+  };
+  return { back: half(back), front: half(front) };
+}
+
 // Flat shape in the x–y plane, facing +z.
 export function flat(points: XY[], z = 0): THREE.BufferGeometry {
   const g = new THREE.ShapeGeometry(new THREE.Shape(points.map(([x, y]) => new THREE.Vector2(x, y))));

@@ -68,6 +68,8 @@ export function useChapter(id: string, track: Track, anchors: Anchor[], animate:
 
     const first = !started.current;
     started.current = true;
+    // From this frame on the scene is drawn, so the still image that stood in for it can go.
+    if (first && stage.posters[id]) stage.posters[id].style.opacity = "0";
     progress.current = first ? v.progress : THREE.MathUtils.damp(progress.current, v.progress, 8, dt);
     yaw.current = THREE.MathUtils.damp(yaw.current, stage.dragYaw, 10, dt);
 

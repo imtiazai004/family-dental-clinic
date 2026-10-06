@@ -32,38 +32,57 @@ const CROWN: XY[] = [
   [0.57, 0.16],
   [0.5, 0],
 ];
-// The trunk ends just below where the roots part, so the arch between them is formed by the roots.
-const TRUNK: XY[] = [
-  [0.5, 0],
-  [0.49, -0.15],
-  [0.47, -0.3],
-  [0.4, -0.42],
-  [0.2, -0.47],
-  [0, -0.48],
-];
 const crownProfile = () => smooth(CROWN, 48, 1);
-const trunkProfile = () => smooth(TRUNK, 16);
 
+// Below the gum the tooth is its two roots and nothing else. Each root is one tube, from the gum
+// line to its tip. At the gum line both tubes are the same round neck, one inside the other. Going
+// down, each draws aside into its own oval, so a groove opens between them at the front and the
+// back and deepens until, at ROOT_TOP, the roots part. Nothing has to be joined, so no seam shows.
+const NECK_RADIUS = 0.5;
 const ROOT_TOP = -0.3;
 const ROOT_TIP = -2.45;
+const NECK_ROWS = 10;
 const ROOT_ROWS = 34;
 // Rows bunch up toward the tip so its rounded end stays smooth.
 const rootT = (i: number) => 1 - (1 - i / ROOT_ROWS) ** 1.5;
 
-// One slice of a root at t (0 = top, 1 = tip): centre, height, half-widths across and front-to-back.
+// One slice of a root: centre, height, half-widths across and front-to-back. t runs from -1 at the
+// gum line, through 0 where the roots part, to 1 at the tip. Above 0 the slice reaches past x = 0,
+// into the other root.
 function rootRing(side: number, t: number) {
+  if (t < 0) {
+    const m = 1 + t;
+    return {
+      cx: side * 0.25 * m,
+      y: ROOT_TOP * m,
+      rx: lerp(NECK_RADIUS, 0.25, m),
+      rz: lerp(NECK_RADIUS, 0.4, m),
+    };
+  }
   const round = t > 0.92 ? Math.sqrt(Math.max(0, 1 - ((t - 0.92) / 0.08) ** 2)) : 1;
   return {
     cx: side * (0.25 + 0.2 * t),
     y: lerp(ROOT_TOP, ROOT_TIP, t),
-    rx: lerp(0.235, 0.075, t ** 0.85) * round,
+    rx: lerp(0.25, 0.075, t ** 0.85) * round,
     rz: lerp(0.4, 0.1, t) * round,
   };
 }
 
+// Rows of a root from top to tip. Row 0 is a lip tucked up inside whatever sits on the gum line, so
+// that no gap shows there; row 1 is the gum line.
+const LIP = 0.02;
+const ROOT_ROW_COUNT = NECK_ROWS + ROOT_ROWS + 2;
+function rootRow(side: number, i: number) {
+  if (i === 0) {
+    const r = rootRing(side, -1);
+    return { ...r, y: 2 * LIP, rx: r.rx - LIP, rz: r.rz - LIP };
+  }
+  return rootRing(side, i <= NECK_ROWS ? (i - 1) / NECK_ROWS - 1 : rootT(i - 1 - NECK_ROWS));
+}
+
 function root(side: number) {
-  return surface(ROOT_ROWS + 1, 28, (i, theta, out) => {
-    const r = rootRing(side, rootT(i));
+  return surface(ROOT_ROW_COUNT, 48, (i, theta, out) => {
+    const r = rootRow(side, i);
     out.set(r.cx + r.rx * Math.cos(theta), r.y, r.rz * Math.sin(theta));
   });
 }
@@ -77,7 +96,7 @@ const merge = (parts: THREE.BufferGeometry[]) => {
 export function buildTooth() {
   return {
     crown: revolve(crownProfile(), 96, { modifier: molar }),
-    root: merge([revolve(trunkProfile(), 64), root(1), root(-1)]),
+    root: merge([root(1), root(-1)]),
   };
 }
 
@@ -102,7 +121,6 @@ export function buildCrownParts() {
       [0.5, 0.06],
       [0.5, 0],
     ]),
-    ...trunkProfile(),
   ];
 
   // Metal layer: a thin shell over the prepared tooth, with a collar that stays visible at the gum.
@@ -189,8 +207,8 @@ const underEnamel = ([x, y]: XY): XY => {
 function rootOutline(side: number): XY[] {
   const outer: XY[] = [];
   const inner: XY[] = [];
-  for (let i = 0; i <= ROOT_ROWS; i++) {
-    const r = rootRing(side, rootT(i));
+  for (let i = 0; i < ROOT_ROW_COUNT; i++) {
+    const r = rootRow(side, i);
     outer.push([r.cx + r.rx, r.y]);
     inner.push([r.cx - r.rx, r.y]);
   }
@@ -198,8 +216,10 @@ function rootOutline(side: number): XY[] {
 }
 
 function canalOutline(side: number): XY[] {
-  const outer: XY[] = [];
-  const inner: XY[] = [];
+  // Starts a little way up inside the pulp chamber, so the two join without a notch.
+  const top = rootRing(side, 0);
+  const outer: XY[] = [[top.cx + 0.075, top.y + 0.07]];
+  const inner: XY[] = [[top.cx - 0.075, top.y + 0.07]];
   for (let i = 0; i <= 20; i++) {
     const t = (i / 20) * 0.96;
     const r = rootRing(side, t);
@@ -216,11 +236,11 @@ function chamberOutline(): XY[] {
     [0.26, 0.52],
     [0.28, 0.2],
     [0.3, -0.1],
-    [0.3, -0.3],
+    [0.325, -0.3],
     [0.12, -0.24],
     [0, -0.2],
     [-0.12, -0.24],
-    [-0.3, -0.3],
+    [-0.325, -0.3],
     [-0.3, -0.1],
     [-0.28, 0.2],
     [-0.26, 0.52],
@@ -240,18 +260,11 @@ export function buildToothSection() {
   const crown = crownProfile();
   const right = outline(crown, 0);
   const left = outline(crown, Math.PI);
-  const trunk = trunkProfile().map((p) => [p.r, p.y] as XY);
-  const trunkLeft = trunk.map(([x, y]) => [-x, y] as XY).reverse();
-
   const enamel = flat([...right, ...left.slice(1).reverse()]);
 
+  // Above the gum line; below it the two roots are all there is.
   const dentin = merge([
-    flat([
-      ...right.map(underEnamel),
-      ...trunk.slice(1),
-      ...trunkLeft.slice(1),
-      ...left.slice(1, -1).reverse().map(underEnamel),
-    ]),
+    flat([...right.map(underEnamel), ...left.slice(1).reverse().map(underEnamel)]),
     flat(rootOutline(1)),
     flat(rootOutline(-1)),
   ]);

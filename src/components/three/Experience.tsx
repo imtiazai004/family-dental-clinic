@@ -23,15 +23,6 @@ type View = { id: string; Scene: ComponentType<SceneProps>; scene: THREE.Scene; 
 
 const MAX_DPR = 1.5;
 
-function hasWebGL() {
-  try {
-    const canvas = document.createElement("canvas");
-    return !!(canvas.getContext("webgl2") || canvas.getContext("webgl"));
-  } catch {
-    return false;
-  }
-}
-
 // Horizontal drag turns the model. Vertical movement is left alone so the page still scrolls.
 function useDragYaw() {
   useEffect(() => {
@@ -138,7 +129,6 @@ function DrawChapters({ views }: { views: View[] }) {
 
 // `ids` are the chapters on this page, in page order.
 export default function Experience({ ids }: { ids: string[] }) {
-  const [supported] = useState(hasWebGL);
   const [dpr, setDpr] = useState(() => Math.min(window.devicePixelRatio || 1, MAX_DPR));
   useDragYaw();
 
@@ -179,8 +169,6 @@ export default function Experience({ ids }: { ids: string[] }) {
     io.observe(el);
     return () => io.disconnect();
   }, []);
-
-  if (!supported) return null;
 
   return (
     <Canvas

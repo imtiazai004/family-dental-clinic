@@ -5,7 +5,7 @@ Last updated: 2026-10-06
 This file is the handover for the next working session. It says what exists, what the finished
 site looks like, the order to build it in, and what is still waiting on the clinic.
 
-**Status: steps 1 and 2 of section 7 are done. Get the owner's go-ahead before starting step 3.**
+**Status: steps 1 to 3 of section 7 are done. The owner has given the go-ahead for step 4.**
 
 ## 1. Where things stand
 
@@ -22,20 +22,34 @@ The site has 13 pages:
 Every page has the new header (Treatments, Contact, WhatsApp, and a menu on phones) and the
 footer. `/about` is not built; it waits for clinic content.
 
+A 3D chapter now has two forms (section 6, "Live and still"). Where the 3D can run, it is the
+scroll chapter as before, with a still image of the model in its place until the 3D has loaded.
+Where it cannot run (no WebGL, "reduce motion" turned on, or JavaScript off), the page shows a
+still image of the model beside all of the chapter's steps, at normal height.
+
 There is a local git repository. Nothing is deployed and nothing has been pushed anywhere.
+Steps 1 and 2 are on `main`. Step 3 is on the branch `step-3-safe-3d`, not yet merged.
 
 ### What has been checked
 
-All on 2026-10-06, after step 2:
+All on 2026-10-06, after step 3:
 
 - `npx tsc --noEmit` and `npm run build` pass.
 - `npm run shots`: screenshots in headless Chrome at 1440×900 and 390×844, covering the home
   chapters, two service pages with a chapter, one without, Treatments, Contact, 404 and the
   phone menu. No console errors and no failed requests.
-- Clicked through in headless Chrome: header links, a treatment card, an "other treatments"
-  link, the logo, the home `#services` button, and the phone menu (open, Escape, follow a
-  link). Moving between pages happens without a full reload, and a 3D chapter still runs on a
-  page reached that way.
+- The same run opens the home page with "reduce motion" on, the Crown page with WebGL made to
+  fail, and the Root Canal page with JavaScript off. All three show the still layout, and none
+  of them starts the 3D.
+- The still image shown while the 3D loads lines up with the live model, compared by eye
+  (`home-loading` against `home-hero`, both sizes).
+- Keyboard, in headless Chrome on the home page: Tab shows "Skip to content" first, Enter on
+  it moves focus to the page content, every focused link shows the ring, and tabbing to the
+  buttons in a chapter's last step scrolls the page to that step.
+- The three defects fixed in this step, in close-up screenshots.
+
+Checked after step 2 and not repeated: clicking through the header links, cards and phone menu,
+and moving between pages without a full reload.
 
 ### What has not been checked
 
@@ -43,6 +57,23 @@ All on 2026-10-06, after step 2:
 - Dragging the model to turn it (mouse and touch).
 - Any browser other than Chrome.
 - The header and menu on a real phone.
+- A real screen reader. The steps are no longer hidden from one, but none has been run.
+- The still layout on a real device with "reduce motion" on, or one without WebGL.
+- How long the still image stays up on a slow connection.
+
+### Things added in step 3 that the owner did not see in advance
+
+- **The still layout** is a new design: the model's picture with every step listed beside it
+  (below it on a phone). Visitors with "reduce motion" on now get this in place of the scroll
+  animation, on every device.
+- **"Skip to content"** link, which shows only when a keyboard user presses Tab.
+- **Focus ring**: a plum and cream outline around whichever link or button the keyboard is on.
+- **The tooth has a new shape below the gum** in the Crown and Root Canal scenes. The two roots
+  now part from one round neck, in place of a trunk that split. This is what removed the lump.
+- **On phones, the band behind a chapter's text is darker**, so the model no longer shows
+  through the words.
+- Step titles in a chapter are now headings, so a screen reader can list them. They look the
+  same.
 
 ### Things added in step 2 that the owner did not see in advance
 
@@ -151,6 +182,7 @@ npm run dev      # dev server (port 3000, or 3001 if 3000 is taken)
 npm run build    # static export into out/, then scripts/fix-export.mjs
 npm run preview  # serve out/
 npm run shots    # screenshots of out/ into shots/ (see section 12)
+npm run posters  # still images of the 3D chapters into public/posters/ (see section 6)
 ```
 
 `scripts/fix-export.mjs` works around a Next.js fault that only shows when building on Windows:
@@ -166,14 +198,15 @@ This Next.js version differs from older ones. Read the relevant guide in
 
 ## 6. How a chapter is built
 
-Every service chapter has the same four pieces. To add one, copy the Crown chapter.
+Every service chapter has the same five pieces. To add one, copy the Crown chapter.
 
 | Piece | File | What it holds |
 |---|---|---|
-| Text | `src/content/chapters.ts` | Steps (eyebrow, title, body, `until`), part labels, WhatsApp button |
+| Text | `src/content/chapters.ts` | Steps (eyebrow, title, body, `until`), part labels, WhatsApp button, length in `screens` |
 | Shapes | `src/components/three/parts/*.ts` | Geometry, built in code |
 | Scene | `src/components/three/scenes/*Scene.tsx` | Camera track, animation, label anchors |
 | Registration | `SCENES` in `src/components/three/Experience.tsx` | Links the chapter id to its scene |
+| Still images | `CHAPTERS` in `scripts/posters.mjs` | The two scroll points to photograph |
 
 Rules that are easy to break:
 
@@ -190,6 +223,9 @@ Shared helpers worth knowing:
 - `parts/tooth.ts` → a two-rooted molar (`buildTooth`), its cut-open view
   (`buildToothSection`), and gum and bone (`buildSocket`). Most remaining chapters reuse these.
 - `materials.tsx` → shared looks for porcelain, titanium, root, gum and bone.
+- For a cut-open view, split the shape with `halve()` in `geometry.ts` and give the half behind
+  the cut `SUNK` from `materials.tsx` (`TissueMeshes` takes `sunk`). Without it, specks of the
+  surfaces behind show through the flat cut face. That was the Root Canal dotted line.
 
 Service descriptions in `src/content/services.ts` are the clinic's own WhatsApp catalogue text.
 Do not add clinical claims that are not in the catalogue or confirmed by the clinic.
@@ -204,8 +240,43 @@ Do not add clinical claims that are not in the catalogue or confirmed by the cli
   `standalone`, which makes the chapter's first step the page's main heading under the service
   name, and drops the "More about this treatment" link.
 - Each scene in `SCENES` is loaded on demand, so a page only downloads the scenes it shows.
-- `Shell.tsx` wraps every page: smooth scrolling, header, footer. `PageHeader.tsx` is the dark
-  opening for pages with no chapter.
+- `Shell.tsx` wraps every page: smooth scrolling, skip link, header, footer. `PageHeader.tsx`
+  is the dark opening for pages with no chapter.
+
+### Live and still
+
+A chapter is **live** (the 3D scroll) or **still** (a picture and all the steps).
+
+- The HTML is built as still. A one-line script in `app/layout.tsx` runs before the page is
+  drawn and marks `<html data-live>` when the browser has WebGL and "reduce motion" is off.
+  `useLive()` in `src/lib/live.ts` then tests that WebGL really starts, and removes the mark if
+  it does not.
+- Style the two forms with the `live:` and `still:` Tailwind variants (defined in
+  `globals.css`). `Chapter.tsx` and `Stage.tsx` are where they are used.
+- In still form nothing 3D is downloaded, and no step is hidden.
+
+### Still images
+
+Each chapter has two, in `public/posters/` (committed): `<id>.webp`, the scene as the chapter
+opens, and `<id>-parts.webp`, the scene with its parts in view. The first covers the wait while
+the 3D loads. The second is the picture in the still layout.
+
+They are photographs of the built site, so the order is:
+
+```
+npm run build
+npm run posters            # every chapter (or: npm run posters -- crown)
+npm run build              # again, so the new images are in out/
+```
+
+- Run it again after changing how a scene looks at either of its two points.
+- For a new chapter, add a line to `CHAPTERS` in `scripts/posters.mjs`: the two scroll points,
+  with the `h` and `w` of the camera shot the scene's `TRACK` holds at each.
+- The loading image is laid exactly over the live model. That depends on three sets of numbers
+  agreeing: where the camera puts a shot (`fitW`, `fitH`, `shiftX`, `shiftY` in `rig.ts`), the
+  `.poster` box in `globals.css`, and `FIT` and `MARGIN` in `scripts/posters.mjs`. Change one
+  and the others must follow. `npm run shots -- loading` shows whether they still agree:
+  compare `home-loading` with `home-hero`.
 
 ## 7. Build order
 
@@ -224,15 +295,15 @@ Each step ends with `npx tsc --noEmit`, `npm run build` and `npm run shots`.
 - New header with a phone menu. Home cards and chapter endings link to service pages.
 - Not done: the optional WhatsApp form on the contact page.
 
-**Step 3: make the 3D safe for every visitor**
+**Step 3: make the 3D safe for every visitor** (done)
 
-- A still image shown while the 3D code loads (it is about 1 MB before compression), so the
-  hero is never an empty gradient.
-- No WebGL: show the still image and normal-height text sections instead of long empty scrolls.
-- "Reduce motion" turned on: same treatment. Today only smooth scrolling is turned off.
-- Screen readers can read every step of a chapter, not only the one on screen. Add a skip link
-  and visible keyboard focus.
-- Fix the defects in section 9.
+- A still image is shown while the 3D code loads, so the hero is never an empty gradient.
+- No WebGL, "reduce motion" on, or JavaScript off: a still image and normal-height text
+  sections instead of long empty scrolls.
+- Screen readers can read every step of a chapter. A skip link and a visible keyboard focus
+  ring were added.
+- The three defects then listed in section 9 were fixed: the lump between the Crown's roots,
+  the dotted line on the Root Canal cut face, and the tooth behind the text on phones.
 
 **Step 4: search and sharing**
 
@@ -275,12 +346,12 @@ Suggested order, easiest reuse first. Each idea is a starting storyboard, not a 
 
 ## 9. Known defects in what is built
 
-- **Crown**: a small rounded lump is still visible between the two roots.
-- **Root Canal**: a faint dotted line shows where the roots join the tooth on the cut face.
-- **Phone layout**: in the Crown "Porcelain, metal, or both" step, the tooth sits behind the
-  text. It is readable, but not clean.
 - **Tooth shape** is stylised. If the clinic wants a more lifelike tooth, a licensed 3D model
   will be needed in place of the code-built one.
+- **Root Canal**: on the cut face, a sliver of gum shows between the two roots just under the
+  pulp chamber. In a real tooth that spot is bone. It is a few pixels wide.
+- **Phone layout**: in the Crown "Porcelain, metal, or both" step, the top of the prepared
+  tooth still shows faintly behind the small "THE CAP" line. The title and text are clear.
 
 ## 10. Waiting on the clinic
 
@@ -340,5 +411,13 @@ anything or any request fails.
 The list of shots is `PAGES` at the top of the script. Add a line there for each new chapter:
 `{ name, chapter: "<slug>", p: <0 to 1> }` scrolls to that point in the chapter.
 
-Whole-page shots (`full: true`) show the header a second time near the bottom. That is the
-capture stitching a fixed header, not a fault in the page.
+Options worth knowing:
+
+- On a page, `still: "motion" | "webgl" | "nojs"` opens it with "reduce motion" on, with WebGL
+  made to fail, or with JavaScript off. The run fails if the 3D starts on such a page.
+- On a shot, `loading: true` shows the page as it is before the 3D has loaded.
+- On a shot, `full: true` saves the whole page. A page too tall for one picture is saved as
+  numbered pieces (`home-still-phone-1.png`, `-2`, `-3`).
+
+`scripts/browser.mjs` holds what `shots.mjs` and `posters.mjs` share: the server for `out/` and
+the headless Chrome.
