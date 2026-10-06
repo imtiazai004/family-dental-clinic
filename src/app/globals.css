@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-plum-950: #160b19;
+  --color-plum-900: #22112a;
+  --color-plum-800: #341a3d;
+  --color-plum-700: #4a2656;
+  --color-plum-500: #7d4a86;
+  --color-plum-300: #c9a6cc;
+  --color-plum-100: #efe3ef;
+  --color-cream: #f7f2ee;
+  --color-ink: #24162a;
+}
+
+@theme inline {
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  background: var(--color-plum-950);
+}
+
+body {
+  @apply bg-plum-950 font-sans text-cream antialiased;
+}
+
+::selection {
+  background: var(--color-plum-500);
+  color: var(--color-cream);
+}
+
+.stage-bg {
+  background: radial-gradient(120% 90% at 70% 40%, #4a2656 0%, #22112a 48%, #160b19 100%);
+}
