@@ -5,9 +5,8 @@ Last updated: 2026-10-06
 This file is the handover for the next working session. It says what exists, what the finished
 site looks like, the order to build it in, and what is still waiting on the clinic.
 
-**Status: steps 1 to 4 of section 7 are done and committed. Step 5 is built on the branch
-`step-5-chapters` and is not committed yet. What is left is steps 6 and 7, and both wait on
-the clinic (section 10).**
+**Status: steps 1 to 5 of section 7 are done and on `main`. What is left is steps 6 and 7, and
+both wait on the clinic (section 10).**
 
 ## 1. Where things stand
 
@@ -33,9 +32,9 @@ Every page has its own title, description and share tags, and the build writes `
 and `robots.txt`. The site does not know its own address yet, so for now `robots.txt` asks
 search engines to stay away (section 6, "Search and sharing").
 
-There is a local git repository. Nothing is deployed and nothing has been pushed anywhere.
-Steps 1 to 4 are all on `main`. The branches `step-3-safe-3d` and `step-4-search-sharing` mark
-where steps 3 and 4 ended and are merged into `main`.
+The code is in git and pushed to GitHub (`origin`). Nothing is deployed. Steps 1 to 5 are all
+on `main`. The branches `step-3-safe-3d`, `step-4-search-sharing` and `step-5-chapters` mark
+where those steps ended and are merged into `main`.
 
 ### What has been checked
 
