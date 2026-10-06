@@ -54,7 +54,67 @@ const PAGES = [
   },
   { path: "/services/crown/", still: "webgl", shots: [{ name: "crown-page-still", full: true }] },
   { path: "/services/root-canal-treatment/", still: "nojs", shots: [{ name: "rootcanal-page-nojs", full: true }] },
-  { path: "/services/dental-veneers/", shots: [{ name: "veneers-page", full: true }] },
+  {
+    path: "/services/dental-veneers/",
+    shots: [
+      { name: "veneers-page-top" },
+      { name: "veneers-page-parts", chapter: "dental-veneers", p: 0.3 },
+      { name: "veneers-page-shell", chapter: "dental-veneers", p: 0.48 },
+      { name: "veneers-page-front", chapter: "dental-veneers", p: 0.66 },
+    ],
+  },
+  {
+    path: "/services/dental-filling/",
+    shots: [
+      { name: "filling-page-inside", chapter: "dental-filling", p: 0.25 },
+      { name: "filling-page-decay", chapter: "dental-filling", p: 0.44 },
+      { name: "filling-page-layers", chapter: "dental-filling", p: 0.71 },
+      { name: "filling-page-filled", chapter: "dental-filling", p: 0.81 },
+    ],
+  },
+  {
+    path: "/services/dental-bleaching/",
+    shots: [
+      { name: "bleaching-page-top" },
+      { name: "bleaching-page-sweep", chapter: "dental-bleaching", p: 0.52 },
+      { name: "bleaching-page-end", chapter: "dental-bleaching", p: 0.97 },
+    ],
+  },
+  {
+    path: "/services/braces/",
+    shots: [
+      { name: "braces-page-top" },
+      { name: "braces-page-parts", chapter: "braces", p: 0.31 },
+      { name: "braces-page-moving", chapter: "braces", p: 0.7 },
+      { name: "braces-page-end", chapter: "braces", p: 0.99 },
+    ],
+  },
+  { path: "/services/braces/", still: "motion", shots: [{ name: "braces-page-still", full: true }] },
+  {
+    path: "/services/complete-denture/",
+    shots: [
+      { name: "denture-page-top" },
+      { name: "denture-page-parts", chapter: "complete-denture", p: 0.3 },
+      { name: "denture-page-base", chapter: "complete-denture", p: 0.66 },
+    ],
+  },
+  {
+    path: "/services/removable-partial-denture/",
+    shots: [
+      { name: "partial-page-top" },
+      { name: "partial-page-parts", chapter: "removable-partial-denture", p: 0.3 },
+      { name: "partial-page-frame", chapter: "removable-partial-denture", p: 0.48 },
+      { name: "partial-page-teeth", chapter: "removable-partial-denture", p: 0.66 },
+    ],
+  },
+  {
+    path: "/services/tooth-extraction/",
+    shots: [
+      { name: "extraction-page-top" },
+      { name: "extraction-page-out", chapter: "tooth-extraction", p: 0.7 },
+      { name: "extraction-page-socket", chapter: "tooth-extraction", p: 0.97 },
+    ],
+  },
   { path: "/contact/", shots: [{ name: "contact", full: true }] },
   { path: "/no-such-page/", shots: [{ name: "not-found" }] },
 ];

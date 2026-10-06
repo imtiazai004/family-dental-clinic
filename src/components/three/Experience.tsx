@@ -17,6 +17,13 @@ const SCENES: Record<string, ComponentType<SceneProps>> = {
   "dental-implant": lazy(() => import("./scenes/ImplantScene")),
   crown: lazy(() => import("./scenes/CrownScene")),
   "root-canal-treatment": lazy(() => import("./scenes/RootCanalScene")),
+  "dental-veneers": lazy(() => import("./scenes/VeneersScene")),
+  "dental-filling": lazy(() => import("./scenes/FillingScene")),
+  "dental-bleaching": lazy(() => import("./scenes/BleachingScene")),
+  braces: lazy(() => import("./scenes/BracesScene")),
+  "complete-denture": lazy(() => import("./scenes/DentureScene")),
+  "removable-partial-denture": lazy(() => import("./scenes/PartialDentureScene")),
+  "tooth-extraction": lazy(() => import("./scenes/ExtractionScene")),
 };
 
 type View = { id: string; Scene: ComponentType<SceneProps>; scene: THREE.Scene; camera: THREE.PerspectiveCamera };
