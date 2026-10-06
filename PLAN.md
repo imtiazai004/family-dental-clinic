@@ -33,9 +33,8 @@ and `robots.txt`. The site does not know its own address yet, so for now `robots
 search engines to stay away (section 6, "Search and sharing").
 
 There is a local git repository. Nothing is deployed and nothing has been pushed anywhere.
-Steps 1 and 2 are on `main`. Step 3 is on the branch `step-3-safe-3d`. Step 4 is on the branch
-`step-4-search-sharing`, which was made from the step 3 branch. Neither branch is merged into
-`main` yet.
+Steps 1 to 4 are all on `main`. The branches `step-3-safe-3d` and `step-4-search-sharing` mark
+where steps 3 and 4 ended and are merged into `main`.
 
 ### What has been checked
 
