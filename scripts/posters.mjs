@@ -1,11 +1,13 @@
 // Makes the still images of the 3D chapters, into public/posters/. They stand in for a scene while it
-// loads, and wherever 3D does not run. They are photographs of the built site, so the order is:
+// loads, and wherever 3D does not run. It also makes the picture that shows when a link to the site is
+// shared, public/share.jpg. All are photographs of the built site, so the order is:
 //
 //   npm run build
-//   npm run posters            every chapter (or: npm run posters -- crown)
+//   npm run posters            all of them (or: npm run posters -- crown, npm run posters -- share)
 //   npm run build              again, so the new images are in out/
 //
-// Run it after changing how a scene looks at the points listed below, and commit the images.
+// Run it after changing how a scene looks at the points listed below, or how the top of the home page
+// looks, and commit the images.
 
 import { mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -35,6 +37,16 @@ const ALONE = `
   header, footer, main > :not(#stage), #stage > :not(.stage-bg), .stage-bg > :not(:has(canvas)) {
     visibility: hidden !important;
   }
+`;
+
+// The picture that shows when a link to the site is shared: the top of the home page, at the size
+// sharing sites ask for, with only the clinic's name, its line and the model left on it. The name is
+// made larger, because the picture is mostly seen small.
+const SHARE_FILE = resolve("public/share.jpg");
+const SHARE = { width: 1200, height: 630 };
+const SHARE_ONLY = `
+  header, #top h1 ~ * { display: none !important; }
+  #top p { font-size: 1.375rem !important; }
 `;
 
 mkdirSync(POSTERS, { recursive: true });
@@ -73,6 +85,17 @@ for (const chapter of CHAPTERS) {
     });
     console.log(file);
   }
+  await page.close();
+}
+
+if (!filter || filter === "share") {
+  const page = await browser.newPage();
+  await page.setViewport(SHARE);
+  await page.goto(`${base}/`, { waitUntil: "networkidle0" });
+  await page.addStyleTag({ content: SHARE_ONLY });
+  await sleep(2500);
+  await page.screenshot({ path: SHARE_FILE, type: "jpeg", quality: 88 });
+  console.log(SHARE_FILE);
   await page.close();
 }
 

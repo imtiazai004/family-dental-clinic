@@ -7,6 +7,7 @@ import Stage from "@/components/Stage";
 import { chapterFor } from "@/content/chapters";
 import { clinic, phoneLink, whatsappLink } from "@/content/clinic";
 import { services } from "@/content/services";
+import { pageMeta } from "@/lib/meta";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -19,7 +20,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const service = services.find((s) => s.slug === slug);
-  return service ? { title: service.name, description: service.description } : {};
+  if (!service) return {};
+  return pageMeta({ title: service.name, description: service.description, path: `/services/${slug}/` });
 }
 
 export default async function ServicePage({ params }: Props) {

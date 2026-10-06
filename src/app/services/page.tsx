@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
 import PageHeader from "@/components/PageHeader";
 import { ServiceCards } from "@/components/Services";
 import Shell from "@/components/Shell";
 import { clinic } from "@/content/clinic";
+import { pageMeta } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "Treatments",
   description: `Every treatment at ${clinic.name}, ${clinic.city}: implants, crowns, veneers, root canal treatment, fillings, braces, bleaching, dentures and extractions.`,
-};
+  path: "/services/",
+});
 
 export default function ServicesPage() {
   return (

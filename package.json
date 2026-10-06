@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build && node scripts/fix-export.mjs",
+    "launch-check": "node --no-warnings scripts/launch-check.mjs",
+    "build:launch": "npm run launch-check && npm run build",
     "preview": "npx serve out",
     "typecheck": "tsc --noEmit",
     "shots": "node scripts/shots.mjs",

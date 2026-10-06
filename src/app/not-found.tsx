@@ -3,7 +3,7 @@ import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import Shell from "@/components/Shell";
 
-export const metadata: Metadata = { title: "Page not found" };
+export const metadata: Metadata = { title: "Page not found", robots: { index: false } };
 
 export default function NotFound() {
   return (

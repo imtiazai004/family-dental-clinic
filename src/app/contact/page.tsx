@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
 import PageHeader from "@/components/PageHeader";
 import Shell from "@/components/Shell";
 import { bookingLink, clinic, directionsLink, phoneLink } from "@/content/clinic";
+import { pageMeta } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "Contact",
   description: `Address, phone and WhatsApp for ${clinic.name}, ${clinic.city}.`,
-};
+  path: "/contact/",
+});
 
 const LABEL = "text-xs font-semibold uppercase tracking-[0.2em] text-plum-500";
 const ACTION = "mt-6 text-sm font-semibold text-plum-700 underline-offset-4 hover:underline";

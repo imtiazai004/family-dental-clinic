@@ -5,7 +5,8 @@ Last updated: 2026-10-06
 This file is the handover for the next working session. It says what exists, what the finished
 site looks like, the order to build it in, and what is still waiting on the clinic.
 
-**Status: steps 1 to 3 of section 7 are done. The owner has given the go-ahead for step 4.**
+**Status: steps 1 to 4 of section 7 are done and committed. Get the owner's go-ahead before
+starting step 5.**
 
 ## 1. Where things stand
 
@@ -27,14 +28,27 @@ scroll chapter as before, with a still image of the model in its place until the
 Where it cannot run (no WebGL, "reduce motion" turned on, or JavaScript off), the page shows a
 still image of the model beside all of the chapter's steps, at normal height.
 
+Every page has its own title, description and share tags, and the build writes `sitemap.xml`
+and `robots.txt`. The site does not know its own address yet, so for now `robots.txt` asks
+search engines to stay away (section 6, "Search and sharing").
+
 There is a local git repository. Nothing is deployed and nothing has been pushed anywhere.
-Steps 1 and 2 are on `main`. Step 3 is on the branch `step-3-safe-3d`, not yet merged.
+Steps 1 and 2 are on `main`. Step 3 is on the branch `step-3-safe-3d`. Step 4 is on the branch
+`step-4-search-sharing`, which was made from the step 3 branch. Neither branch is merged into
+`main` yet.
 
 ### What has been checked
 
-All on 2026-10-06, after step 3:
+All on 2026-10-06, after step 4:
 
 - `npx tsc --noEmit` and `npm run build` pass.
+- Read from the built files: every page has a title, a description, its own address as the
+  canonical link, and share tags with the share image. The 404 page is marked "do not index".
+  `sitemap.xml` lists all 13 pages.
+- Built once with a trial address (`https://example.com`), then put back: `robots.txt` lets
+  search engines in and names the sitemap, and the sitemap, canonical links, share tags and
+  clinic details all carry that address.
+- `npm run launch-check` fails and lists the four things still open.
 - `npm run shots`: screenshots in headless Chrome at 1440×900 and 390×844, covering the home
   chapters, two service pages with a chapter, one without, Treatments, Contact, 404 and the
   phone menu. No console errors and no failed requests.
@@ -60,6 +74,23 @@ and moving between pages without a full reload.
 - A real screen reader. The steps are no longer hidden from one, but none has been run.
 - The still layout on a real device with "reduce motion" on, or one without WebGL.
 - How long the still image stays up on a slow connection.
+- How a shared link really looks in WhatsApp, Facebook or X. That can only be seen once the
+  site is online at its own address.
+
+### Things added in step 4 that the owner did not see in advance
+
+- **The share image** (`public/share.jpg`): the top of the home page with the clinic's name,
+  "Smiles for every generation" and the implant model. Every page shares this one picture.
+- **Search engines are kept out until the site has its address.** While `url` in
+  `src/content/clinic.ts` is empty, `robots.txt` says "stay away", so a preview copy put online
+  does not end up in Google.
+- **The check for unfinished content is its own command, not part of every build.** The plan
+  asked for a build that fails while a service is marked `draft`. Two are, so that would have
+  stopped every build from now until the clinic sends its text. `npm run build` works as
+  before. `npm run build:launch` runs the check first, and is the one to use for the copy that
+  goes live.
+- That check also fails while the site's address is empty, the address and phone number are
+  not marked confirmed, or the opening hours are empty.
 
 ### Things added in step 3 that the owner did not see in advance
 
@@ -182,8 +213,14 @@ npm run dev      # dev server (port 3000, or 3001 if 3000 is taken)
 npm run build    # static export into out/, then scripts/fix-export.mjs
 npm run preview  # serve out/
 npm run shots    # screenshots of out/ into shots/ (see section 12)
-npm run posters  # still images of the 3D chapters into public/posters/ (see section 6)
+npm run posters  # still images of the 3D chapters, and the share image (see section 6)
+npm run launch-check   # lists what src/content/ says is unfinished, and fails if anything is
+npm run build:launch   # that check, then the build. For the copy that goes live.
 ```
+
+If a build stops with "Failed to type check" or "build worker exited" and names no fault in the
+code, the machine was short of memory. Run it again. It happened several times on 2026-10-06
+while other programs were holding most of the memory, and each time the next run passed.
 
 `scripts/fix-export.mjs` works around a Next.js fault that only shows when building on Windows:
 the small files that let links load the next page without a full reload are written under the
@@ -242,6 +279,21 @@ Do not add clinical claims that are not in the catalogue or confirmed by the cli
 - Each scene in `SCENES` is loaded on demand, so a page only downloads the scenes it shows.
 - `Shell.tsx` wraps every page: smooth scrolling, skip link, header, footer. `PageHeader.tsx`
   is the dark opening for pages with no chapter.
+
+### Search and sharing
+
+- A page gets its title, description, canonical link and share tags from `pageMeta()` in
+  `src/lib/meta.ts`. Every new page should export it as its `metadata`, and be added to the
+  list in `src/app/sitemap.ts`. Service pages are covered already: both read `services.ts`.
+- Do not set `openGraph` on a page by hand. It replaces the whole set from `pageMeta()`,
+  share image included.
+- The site's address is `url` in `src/content/clinic.ts`. Empty, it falls back to
+  `http://localhost:3000` in the sitemap and tags, and `robots.txt` (from `src/app/robots.ts`)
+  shuts search engines out. Set, everything carries the real address and `robots.txt` opens.
+- The share image is `public/share.jpg`, made by `npm run posters` (or
+  `npm run posters -- share`) from the top of the home page. Remake it if the hero changes.
+- The clinic details that search engines read are `jsonLd` in `src/app/layout.tsx`. Opening
+  hours and a map location are not in it yet.
 
 ### Live and still
 
@@ -305,13 +357,13 @@ Each step ends with `npx tsc --noEmit`, `npm run build` and `npm run shots`.
 - The three defects then listed in section 9 were fixed: the lump between the Crown's roots,
   the dotted line on the Root Canal cut face, and the tooth behind the text on phones.
 
-**Step 4: search and sharing**
+**Step 4: search and sharing** (done, except what waits on the clinic)
 
 - A title and description for every page, a share image, a sitemap and `robots.txt`.
-- Complete the clinic details that search engines read in `layout.tsx` (site address, hours,
-  map location), once confirmed.
-- A build check that fails while any service is still marked `draft: true`. Today the two
-  stand-in descriptions are published like the rest.
+- The clinic details that search engines read now take the site address from `clinic.ts`.
+  Still to add once the clinic confirms them: opening hours and map location.
+- `npm run build:launch` fails while any service is marked `draft: true`, among other things
+  (section 1 says why this is not the everyday build).
 
 **Step 5: the seven remaining 3D chapters**
 
@@ -327,6 +379,8 @@ happen at any point after step 2.
 - Test on real mid-range Android phones, and in Safari and Firefox.
 - Choose hosting, connect the domain, add analytics.
 - Every "confirm with the clinic" item in section 10 is closed.
+- Set `url`, `confirmed` and `hours` in `src/content/clinic.ts`, then build with
+  `npm run build:launch`. Share a link in WhatsApp to see the preview.
 
 ## 8. Remaining 3D chapters (7)
 
@@ -361,12 +415,12 @@ code is in.
 Needed to launch:
 
 - **Phone number and address**: taken from an earlier planning PDF, not confirmed. Both live
-  in `src/content/clinic.ts`.
+  in `src/content/clinic.ts`. Set `confirmed: true` there once they are.
 - **Opening hours** and the clinic's **Google Maps link**.
 - **Logo** (the header is text only for now).
 - **Bleaching and Filling**: full catalogue text. The screenshots cut it off, so
   `services.ts` holds short stand-in lines marked `draft: true`.
-- **Domain name** the site will live on.
+- **Domain name** the site will live on. It goes in `url` in `src/content/clinic.ts`.
 
 Needed for specific pages or sections:
 
